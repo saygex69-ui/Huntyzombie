@@ -1,0 +1,128 @@
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+-- Frame chính
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 400, 0, 200)
+Main.Position = UDim2.new(0.5, -200, 0.5, -100)
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.Active = true
+Main.Draggable = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+
+-- Panel bên trái
+local LeftPanel = Instance.new("Frame", Main)
+LeftPanel.Size = UDim2.new(0.7, -5, 1, -10)
+LeftPanel.Position = UDim2.new(0, 5, 0, 5)
+LeftPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+Instance.new("UICorner", LeftPanel).CornerRadius = UDim.new(0, 8)
+
+local LeftTitle = Instance.new("TextLabel", LeftPanel)
+LeftTitle.Size = UDim2.new(1, 0, 0, 30)
+LeftTitle.BackgroundTransparency = 1
+LeftTitle.Text = "HuntyZombie Menu"
+LeftTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LeftTitle.Font = Enum.Font.GothamBold
+LeftTitle.TextSize = 16
+
+-- Hàm tạo toggle
+local function createToggle(parent, text, order, callback)
+    local Btn = Instance.new("TextButton", parent)
+    Btn.Size = UDim2.new(0.9, 0, 0, 30)
+    Btn.Position = UDim2.new(0, 10, 0, 40 + order * 40)
+    Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Btn.Text = text .. " [OFF]"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.Gotham
+    Btn.TextSize = 14
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+
+    local state = false
+    Btn.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            Btn.Text = text .. " [ON]"
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        else
+            Btn.Text = text .. " [OFF]"
+            Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
+        callback(state)
+    end)
+end
+
+-- Logic Auto Attack
+local AutoAttack = false
+local Remote = game.ReplicatedStorage:WaitForChild("AttackRemote") -- chỉnh lại tên Remote đúng trong game
+
+task.spawn(function()
+    while true do
+        if AutoAttack then
+            pcall(function()
+                Remote:FireServer()
+            end)
+        end
+        task.wait(0.2)
+    end
+end)
+
+-- Logic Auto Mobs
+local AutoMobs = false
+task.spawn(function()
+    while true do
+        if AutoMobs then
+            local player = game.Players.LocalPlayer
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+            if hrp then
+                local closest, dist = nil, math.huge
+                for _, mob in pairs(workspace.Mobs:GetChildren()) do
+                    if mob:FindFirstChild("HumanoidRootPart") and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                        local d = (hrp.Position - mob.HumanoidRootPart.Position).Magnitude
+                        if d < dist then
+                            closest, dist = mob, d
+                        end
+                    end
+                end
+
+                if closest then
+                    hrp.CFrame = closest.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3)
+                end
+            end
+        end
+        task.wait(0.5)
+    end
+end)
+
+-- Tạo 2 toggle
+createToggle(LeftPanel, "Auto Attack", 0, function(state) AutoAttack = state end)
+createToggle(LeftPanel, "Auto Mobs", 1, function(state) AutoMobs = state end)
+
+-- Panel bên phải (logo/info)
+local RightPanel = Instance.new("Frame", Main)
+RightPanel.Size = UDim2.new(0.3, -10, 1, -10)
+RightPanel.Position = UDim2.new(0.7, 5, 0, 5)
+RightPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Instance.new("UICorner", RightPanel).CornerRadius = UDim.new(0, 8)
+
+local RightLabel = Instance.new("TextLabel", RightPanel)
+RightLabel.Size = UDim2.new(1, 0, 1, 0)
+RightLabel.BackgroundTransparency = 1
+RightLabel.Text = "Vũ Tùng IOS On Top"
+RightLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+RightLabel.Font = Enum.Font.GothamBold
+RightLabel.TextSize = 20
+
+-- Nút tắt/mở menu
+local ToggleButton = Instance.new("ImageButton", ScreenGui)
+ToggleButton.Size = UDim2.new(0, 40, 0, 40)
+ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+ToggleButton.BackgroundTransparency = 1
+ToggleButton.Image = "rbxassetid://3926305904" -- thay icon nếu muốn
+
+local menuVisible = true
+ToggleButton.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    Main.Visible = menuVisible
+end)
