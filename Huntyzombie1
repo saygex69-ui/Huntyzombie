@@ -1,0 +1,178 @@
+-- UI Library
+local library = {}
+
+function library:CreateWindow(name)
+    local Window = Instance.new("ScreenGui")
+    Window.Name = name
+    Window.ResetOnSpawn = false
+    Window.Parent = game.CoreGui
+
+    local Main = Instance.new("Frame", Window)
+    Main.Size = UDim2.new(0, 500, 0, 300)
+    Main.Position = UDim2.new(0.5, -250, 0.5, -150)
+    Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Main.BorderSizePixel = 0
+    Main.Active = true
+    Main.Draggable = true
+
+    local Title = Instance.new("TextLabel", Main)
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Title.BorderSizePixel = 0
+    Title.Text = name
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 18
+
+    local TabHolder = Instance.new("Frame", Main)
+    TabHolder.Size = UDim2.new(0, 120, 1, -30)
+    TabHolder.Position = UDim2.new(0, 0, 0, 30)
+    TabHolder.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    TabHolder.BorderSizePixel = 0
+
+    local PageHolder = Instance.new("Frame", Main)
+    PageHolder.Size = UDim2.new(1, -120, 1, -30)
+    PageHolder.Position = UDim2.new(0, 120, 0, 30)
+    PageHolder.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    PageHolder.BorderSizePixel = 0
+
+    function library:CreateTab(tabName)
+        local Button = Instance.new("TextButton", TabHolder)
+        Button.Size = UDim2.new(1, 0, 0, 30)
+        Button.Text = tabName
+        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Button.Font = Enum.Font.SourceSans
+        Button.TextSize = 16
+
+        local Page = Instance.new("ScrollingFrame", PageHolder)
+        Page.Size = UDim2.new(1, 0, 1, 0)
+        Page.Visible = false
+        Page.BackgroundTransparency = 1
+        Page.CanvasSize = UDim2.new(0, 0, 0, 500)
+
+        Button.MouseButton1Click:Connect(function()
+            for _, v in pairs(PageHolder:GetChildren()) do
+                v.Visible = false
+            end
+            Page.Visible = true
+        end)
+
+        local elements = {}
+
+        function elements:CreateButton(text, callback)
+            local Btn = Instance.new("TextButton", Page)
+            Btn.Size = UDim2.new(0, 200, 0, 30)
+            Btn.Position = UDim2.new(0, 10, 0, (#Page:GetChildren() - 1) * 35)
+            Btn.Text = text
+            Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Font = Enum.Font.SourceSans
+            Btn.TextSize = 16
+            Btn.MouseButton1Click:Connect(function()
+                pcall(callback)
+            end)
+        end
+
+        function elements:CreateToggle(text, callback)
+            local Toggle = Instance.new("TextButton", Page)
+            Toggle.Size = UDim2.new(0, 200, 0, 30)
+            Toggle.Position = UDim2.new(0, 10, 0, (#Page:GetChildren() - 1) * 35)
+            Toggle.Text = text .. " : OFF"
+            Toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.Font = Enum.Font.SourceSans
+            Toggle.TextSize = 16
+
+            local state = false
+            Toggle.MouseButton1Click:Connect(function()
+                state = not state
+                Toggle.Text = text .. (state and " : ON" or " : OFF")
+                pcall(callback, state)
+            end)
+        end
+
+        return elements
+    end
+
+    return library
+end
+
+--===[ FULL MENU ]===--
+
+local win = library:CreateWindow("Hunty Zombie")
+
+local main = win:CreateTab("Main")
+
+main:CreateToggle("Auto Attack", function(state)
+    _G.AutoAttack = state
+    while _G.AutoAttack do
+        task.wait(0.3)
+        pcall(function()
+            local args = {[1] = "Attack"}
+            game.ReplicatedStorage.Remotes.Combat:FireServer(unpack(args))
+        end)
+    end
+end)
+
+main:CreateToggle("Auto Skills", function(state)
+    _G.AutoSkills = state
+    while _G.AutoSkills do
+        task.wait(2)
+        pcall(function()
+            game.ReplicatedStorage.Remotes.Skill:FireServer("Skill1")
+            game.ReplicatedStorage.Remotes.Skill:FireServer("Skill2")
+        end)
+    end
+end)
+
+main:CreateToggle("Auto Mobs", function(state)
+    _G.AutoMobs = state
+    while _G.AutoMobs do
+        task.wait(1)
+        pcall(function()
+            local mob = game.Workspace.Enemies:FindFirstChildWhichIsA("Model")
+            if mob and mob:FindFirstChild("HumanoidRootPart") then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
+            end
+        end)
+    end
+end)
+
+main:CreateToggle("Collect Coins", function(state)
+    _G.CollectCoins = state
+    while _G.CollectCoins do
+        task.wait(0.5)
+        pcall(function()
+            for _,coin in pairs(game.Workspace.Coins:GetChildren()) do
+                coin.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+            end
+        end)
+    end
+end)
+
+main:CreateButton("Inf Perks", function()
+    pcall(function()
+        game.ReplicatedStorage.Remotes.Perks:FireServer("Infinite")
+    end)
+end)
+
+main:CreateToggle("Auto Radio", function(state)
+    _G.AutoRadio = state
+    while _G.AutoRadio do
+        task.wait(3)
+        pcall(function()
+            game.ReplicatedStorage.Remotes.Radio:FireServer("Play")
+        end)
+    end
+end)
+
+main:CreateToggle("Auto Helicopter", function(state)
+    _G.AutoHeli = state
+    while _G.AutoHeli do
+        task.wait(5)
+        pcall(function()
+            game.ReplicatedStorage.Remotes.Helicopter:FireServer("Spawn")
+        end)
+    end
+end)
