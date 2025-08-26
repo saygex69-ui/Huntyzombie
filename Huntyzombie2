@@ -1,0 +1,128 @@
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 250, 0, 300)
+Main.Position = UDim2.new(0.05, 0, 0.2, 0)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.BorderSizePixel = 0
+
+-- Title
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Title.Text = "Tùng Hunty "
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+
+-- Function create checkbox
+local function createCheckbox(text, order, callback)
+    local frame = Instance.new("Frame", Main)
+    frame.Size = UDim2.new(1, -10, 0, 25)
+    frame.Position = UDim2.new(0, 5, 0, 40 + (order * 30))
+    frame.BackgroundTransparency = 1
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local box = Instance.new("TextButton", frame)
+    box.Size = UDim2.new(0, 20, 0, 20)
+    box.Position = UDim2.new(1, -25, 0.5, -10)
+    box.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    box.Text = ""
+    box.AutoButtonColor = false
+
+    local check = Instance.new("TextLabel", box)
+    check.Size = UDim2.new(1, 0, 1, 0)
+    check.BackgroundTransparency = 1
+    check.Text = "✓"
+    check.TextColor3 = Color3.fromRGB(200, 0, 0)
+    check.Font = Enum.Font.GothamBold
+    check.TextSize = 16
+    check.Visible = false
+
+    local state = false
+    box.MouseButton1Click:Connect(function()
+        state = not state
+        check.Visible = state
+        pcall(callback, state)
+    end)
+end
+
+-- Function create slider
+local function createSlider(text, order, min, max, default, callback)
+    local frame = Instance.new("Frame", Main)
+    frame.Size = UDim2.new(1, -10, 0, 40)
+    frame.Position = UDim2.new(0, 5, 0, 40 + (order * 40))
+    frame.BackgroundTransparency = 1
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, 0, 0, 15)
+    label.BackgroundTransparency = 1
+    label.Text = text .. ": " .. default
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local slider = Instance.new("TextButton", frame)
+    slider.Size = UDim2.new(1, -20, 0, 15)
+    slider.Position = UDim2.new(0, 10, 0, 20)
+    slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    slider.Text = ""
+
+    local fill = Instance.new("Frame", slider)
+    fill.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+
+    local val = default
+
+    slider.MouseButton1Down:Connect(function(x,y)
+        local move, release
+        move = game:GetService("UserInputService").InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                local percent = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+                fill.Size = UDim2.new(percent, 0, 1, 0)
+                val = math.floor(min + (max-min)*percent)
+                label.Text = text .. ": " .. val
+                pcall(callback, val)
+            end
+        end)
+        release = game:GetService("UserInputService").InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                move:Disconnect()
+                release:Disconnect()
+            end
+        end)
+    end)
+end
+
+-- Function create label
+local function createLabel(text, order)
+    local label = Instance.new("TextLabel", Main)
+    label.Size = UDim2.new(1, -10, 0, 20)
+    label.Position = UDim2.new(0, 5, 0, 40 + (order * 25))
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+end
+
+
+createCheckbox("Auto Attack", 0, function(v) print("Auto Attack", v) end)
+createSlider("Set Distance", 1, 1, 50, 10, function(v) print("Distance", v) end)
+createCheckbox("Auto Mobs", 2, function(v) print("Auto Mobs", v) end)
+createCheckbox("Auto Skills", 3, function(v) print("Auto Skills", v) end)
+createCheckbox("Inf Perks", 4, function(v) print("Inf Perks", v) end)
+createCheckbox("Collect Coins", 5, function(v) print("Collect Coins", v) end)
+createCheckbox("Auto Radio & Helicopter", 6, function(v) print("Radio/Heli", v) end)
+createLabel("Make By VutungIOS", 7)
