@@ -1,0 +1,82 @@
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+
+-- Frame chính (có thể di chuyển)
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 600, 0, 350)
+Main.Position = UDim2.new(0.5, -300, 0.5, -175)
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.Active = true
+Main.Draggable = true
+
+local UICorner = Instance.new("UICorner", Main)
+UICorner.CornerRadius = UDim.new(0, 10)
+
+-- Panel bên trái (HuntyZombie menu)
+local LeftPanel = Instance.new("Frame", Main)
+LeftPanel.Size = UDim2.new(0.7, -5, 1, -10)
+LeftPanel.Position = UDim2.new(0, 5, 0, 5)
+LeftPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+
+local leftCorner = Instance.new("UICorner", LeftPanel)
+leftCorner.CornerRadius = UDim.new(0, 8)
+
+-- Title Left
+local LeftTitle = Instance.new("TextLabel", LeftPanel)
+LeftTitle.Size = UDim2.new(1, 0, 0, 30)
+LeftTitle.BackgroundTransparency = 1
+LeftTitle.Text = "HuntyZombie Functions"
+LeftTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+LeftTitle.Font = Enum.Font.GothamBold
+LeftTitle.TextSize = 16
+
+-- Hàm tạo toggle
+local function createToggle(parent, text, order)
+    local Btn = Instance.new("TextButton", parent)
+    Btn.Size = UDim2.new(0.9, 0, 0, 30)
+    Btn.Position = UDim2.new(0, 10, 0, 40 + order * 40)
+    Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Btn.Text = text .. " [OFF]"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.Gotham
+    Btn.TextSize = 14
+
+    local c = Instance.new("UICorner", Btn)
+    c.CornerRadius = UDim.new(0, 6)
+
+    local state = false
+    Btn.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            Btn.Text = text .. " [ON]"
+            Btn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        else
+            Btn.Text = text .. " [OFF]"
+            Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
+    end)
+end
+
+-- Các toggle chức năng bên trái
+createToggle(LeftPanel, "Auto Attack", 0)
+createToggle(LeftPanel, "Auto Skills", 1)
+createToggle(LeftPanel, "Auto Mobs", 2)
+createToggle(LeftPanel, "Collect Coins", 3)
+
+-- Panel bên phải (Logo / Info)
+local RightPanel = Instance.new("Frame", Main)
+RightPanel.Size = UDim2.new(0.3, -10, 1, -10)
+RightPanel.Position = UDim2.new(0.7, 5, 0, 5)
+RightPanel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+
+local rightCorner = Instance.new("UICorner", RightPanel)
+rightCorner.CornerRadius = UDim.new(0, 8)
+
+-- Text “Vũ Tùng IOS On Top”
+local RightLabel = Instance.new("TextLabel", RightPanel)
+RightLabel.Size = UDim2.new(1, 0, 1, 0)
+RightLabel.BackgroundTransparency = 1
+RightLabel.Text = "Vũ Tùng IOS On Top"
+RightLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+RightLabel.Font = Enum.Font.GothamBold
+RightLabel.TextSize = 20
